@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: teavision-api
+    runtime: python
+    region: singapore  # closest to South Asia for tea garden users
+    plan: free
+    buildCommand: |
+      pip install --upgrade pip
+      pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+      pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DEBUG
+        value: "false"
+      - key: MODEL_PATH
+        value: models/lightteanet_eca_mobilevit_xxs_kd_torchscript.pt
+      - key: MODEL_VERSION
+        value: lightteanet-eca-v1
+      - key: MAX_UPLOAD_SIZE_MB
+        value: "10"
+      - key: ALLOWED_ORIGINS
+        sync: false  # Set manually in Render dashboard to your Vercel URL
+      - key: SUPABASE_URL
+        sync: false  # Set in Render dashboard
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+    healthCheckPath: /health
+    autoDeploy: true

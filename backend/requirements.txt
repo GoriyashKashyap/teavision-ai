@@ -1,0 +1,27 @@
+# TeaVision AI — Backend Python Dependencies
+# ============================================================
+# NOTE: PyTorch is NOT listed here — it must be installed first
+# with the platform-specific command:
+#
+#   CPU (Render/production):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+#
+#   GPU (local with CUDA):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+#
+# See Dockerfile and render.yaml for automated build commands.
+# ============================================================
+
+uvicorn==0.32.1
+fastapi==0.115.6
+python-multipart==0.0.12
+pydantic==2.10.4
+pydantic-settings==2.7.0
+pillow==11.1.0
+numpy==2.2.1
+python-dotenv==1.0.1
+aiofiles==24.1.0
+httpx==0.28.1
+
+# Supabase (enable when connecting cloud database)
+# supabase==2.10.0

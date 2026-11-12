@@ -1,0 +1,92 @@
+# ============================================================
+# TeaVision AI — Git Ignore
+# ============================================================
+
+# --- OS / Editor --------------------------------------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# --- Python virtual environment -----------------------------------
+backend/venv/
+venv/
+.venv/
+
+# --- Python -------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.env/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+*.egg-info/
+.pypirc
+
+# --- Node ---------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnp*
+.pnp.js
+dist/
+dist-ssr/
+*.local
+
+# --- Frontend build artifacts -------------------------------------
+frontend/.env
+frontend/.env.local
+frontend/.env.development
+frontend/.env.production
+frontend/build/
+
+# --- Backend secrets ----------------------------------------------
+backend/.env
+backend/models/*.pt
+!backend/models/README.md
+backend/data/*.db
+backend/data/
+
+# --- Supabase -----------------------------------------------------
+supabase/
+*.service_key
+*.anon_key
+
+# --- IDE ----------------------------------------------------------
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# --- Logs ---------------------------------------------------------
+*.log
+logs/
+
+# --- Temporary files ----------------------------------------------
+tmp/
+temp/
+*.tmp
+*.temp
