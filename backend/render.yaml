@@ -28,3 +28,4 @@ services:
         sync: false
     healthCheckPath: /health
     autoDeploy: true
+
