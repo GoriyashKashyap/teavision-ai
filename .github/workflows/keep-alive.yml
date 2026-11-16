@@ -1,0 +1,24 @@
+name: Keep Render Backend Warm
+
+on:
+  schedule:
+    # Runs every 10 minutes to prevent Render free-tier spin-down (inactivity threshold is 15m)
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows manual triggering from the Actions tab
+
+jobs:
+  ping-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping TeaVision API Health Endpoint
+        run: |
+          echo "Pinging TeaVision API health endpoint..."
+          RESPONSE=$(curl -s -S -w "\nHTTP_STATUS:%{http_code}\nTIME_TOTAL:%{time_total}s" https://teavision-api.onrender.com/health)
+          echo "$RESPONSE"
+          STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS:" | cut -d':' -f2)
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ TeaVision API is warm and operational."
+          else
+            echo "⚠️ Health check returned status $STATUS."
+          fi
