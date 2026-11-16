@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import logging
-from typing import Annotated
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
 
 from app.core.config import settings
 from app.database.repository import repo
@@ -22,7 +22,10 @@ MAX_BYTES = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024
 
 
 @router.post("/predict", response_model=PredictionResponse, status_code=status.HTTP_200_OK)
-async def predict(file: Annotated[UploadFile, File(description="Tea leaf image (JPEG, PNG, WebP)")]):
+async def predict(
+    file: Annotated[UploadFile, File(description="Tea leaf image (JPEG, PNG, WebP)")],
+    model_id: Optional[str] = Form(default=None, description="Model ID to use for inference"),
+):
     """Run disease detection on a single tea leaf image.
 
     Returns the predicted class, confidence score, top-3 predictions,
@@ -60,7 +63,7 @@ async def predict(file: Annotated[UploadFile, File(description="Tea leaf image (
 
     # --- Inference ----------------------------------------------------------
     try:
-        result = run_prediction(image_bytes)
+        result = run_prediction(image_bytes, model_id=model_id)
         # Persist prediction record
         repo.save_prediction(
             prediction_id=result.prediction_id,

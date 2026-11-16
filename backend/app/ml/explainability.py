@@ -34,6 +34,8 @@ def generate_attention_heatmap(
     image_bytes: bytes,
     class_index: int,
     tensor: torch.Tensor,
+    model: Optional[object] = None,
+    model_name: str = "LightTeaNet-ECA",
 ) -> Dict[str, str]:
     """Generate visual explanation heatmaps for the given class prediction.
 
@@ -41,12 +43,15 @@ def generate_attention_heatmap(
         image_bytes: Raw image bytes from the user upload.
         class_index: Target category index (0 to 6) to explain.
         tensor: The preprocessed float tensor (1, 3, 224, 224).
+        model: Optional model instance to use (defaults to active model).
+        model_name: Display name of the model for the scientific note.
 
     Returns:
         Dict with 'heatmap_overlay', 'saliency_heatmap' (base64 data URLs)
         and 'explanation_note'.
     """
-    model = model_manager.get_model()
+    if model is None:
+        model = model_manager.get_model()
 
     # Clone tensor and enable gradients
     input_tensor = tensor.clone().detach()
@@ -91,10 +96,10 @@ def generate_attention_heatmap(
         "heatmap_overlay": to_data_url(overlay),
         "saliency_heatmap": to_data_url(smoothed_heatmap),
         "explanation_note": (
-            "Visual heatmap highlights the leaf pixels that most strongly influenced the "
-            "LightTeaNet-ECA classification score. Warm regions (red/yellow) indicate primary "
-            "visual evidence; cool regions (blue) had minimal impact. This represents model attention, "
-            "not pathological proof."
+            f"Visual heatmap highlights the leaf pixels that most strongly influenced the "
+            f"{model_name} classification score. Warm regions (red/yellow) indicate primary "
+            f"visual evidence; cool regions (blue) had minimal impact. This represents model attention, "
+            f"not pathological proof."
         ),
     }
 

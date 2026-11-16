@@ -4,6 +4,7 @@ import { Leaf, Upload, Camera, X, Scan, AlertCircle, CheckCircle2, Loader2, Chev
 import { predict, extractApiError } from '../services/api';
 import type { UploadState } from '../types';
 import ResultsCard from '../components/prediction/ResultsCard';
+import ModelSelector from '../components/prediction/ModelSelector';
 import { ACCEPTED_IMAGE_TYPES, MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_MB } from '../lib/constants';
 
 function validateFile(file: File): string | null {
@@ -18,6 +19,7 @@ function validateFile(file: File): string | null {
 
 export default function ScannerPage() {
   const [state, setState] = useState<UploadState>({ status: 'idle' });
+  const [selectedModelId, setSelectedModelId] = useState('lightteanet-eca-kd');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -53,12 +55,12 @@ export default function ScannerPage() {
     try {
       const result = await predict(file, (pct) => {
         setState({ status: 'uploading', progress: pct, preview });
-      });
+      }, selectedModelId);
       setState({ status: 'success', result, preview });
     } catch (err) {
       setState({ status: 'error', message: extractApiError(err) });
     }
-  }, [state]);
+  }, [state, selectedModelId]);
 
   const reset = useCallback(() => {
     if ('preview' in state && state.preview) {
@@ -195,6 +197,16 @@ export default function ScannerPage() {
               </div>
             )}
 
+            {/* Model Selection — shown when idle or image selected */}
+            {(state.status === 'idle' || state.status === 'selected') && (
+              <ModelSelector
+                selectedModelId={selectedModelId}
+                onSelectModel={setSelectedModelId}
+                disabled={false}
+                className="mt-4"
+              />
+            )}
+
             {/* Uploading */}
             {state.status === 'uploading' && (
               <div className="card p-8 text-center animate-fade-in">
@@ -202,7 +214,7 @@ export default function ScannerPage() {
                   <Loader2 className="w-7 h-7 text-forest-700 animate-spin" />
                 </div>
                 <h3 className="font-display font-semibold text-tv-primary mb-2">Analyzing your leaf…</h3>
-                <p className="text-sm text-tv-secondary mb-4">Running LightTeaNet-ECA inference</p>
+                <p className="text-sm text-tv-secondary mb-4">Running {selectedModelId === 'lightteanet-eca-kd' ? 'LightTeaNet-ECA' : selectedModelId === 'lightteanet-se' ? 'LightTeaNet-SE' : selectedModelId === 'mobilenetv2-baseline' ? 'MobileNetV2' : selectedModelId === 'mobilevit-xxs' ? 'MobileViT-XXS' : 'MobileViT-S'} inference</p>
                 <div className="confidence-bar max-w-xs mx-auto">
                   <div
                     className="confidence-fill"

@@ -1,13 +1,19 @@
 """Agronomic AI Assistant Service.
 Provides scientifically verified tea plantation guidance and disease intelligence
-based on Tea Research Institute (TRI) and UPASI agronomic literature.
+powered by Google Gemini (with TRI/UPASI grounding) and fallback to a curated
+Tea Research Institute (TRI) Sri Lanka expert knowledge base.
 """
 
 from __future__ import annotations
 
-import re
-from typing import Dict, List, Optional
+import logging
+from typing import List, Optional
+import httpx
+
+from app.core.config import settings
 from app.schemas.assistant import AssistantChatResponse
+
+logger = logging.getLogger("teavision.assistant")
 
 # Curated Plant Pathology Knowledge Base
 KNOWLEDGE_BASE = {
@@ -81,12 +87,128 @@ DISCLAIMER = (
 )
 
 
-def process_assistant_query(
+async def _call_gemini_llm(
     message: str,
     context_disease: Optional[str] = None,
     history: Optional[List[dict]] = None,
+) -> Optional[AssistantChatResponse]:
+    """Call Google Gemini 1.5 Flash via REST API with TRI plant pathology grounding."""
+    if not settings.GEMINI_API_KEY or not settings.GEMINI_API_KEY.strip():
+        return None
+
+    # Construct grounding knowledge
+    grounding_text = "\n\n".join([
+        f"### {v['title']}\n"
+        f"- Symptoms: {v['symptoms']}\n"
+        f"- Causes & Environmental Triggers: {v['causes']}\n"
+        f"- Prevention: {v['prevention']}\n"
+        f"- Estate Management: {v['management']}\n"
+        f"- Biological / Organic Alternatives: {v['organic']}"
+        for v in KNOWLEDGE_BASE.values()
+    ])
+
+    system_instruction = (
+        "You are the TeaVision Senior Plant Pathologist and Tea Agronomist Assistant. "
+        "You specialize in Camellia sinensis (tea plant) agronomy, foliar pathology, and integrated pest management (IPM).\n\n"
+        "GROUNDING PLANT PATHOLOGY KNOWLEDGE (Tea Research Institute of Sri Lanka & UPASI):\n"
+        f"{grounding_text}\n\n"
+        f"CURRENT DIAGNOSTIC CONTEXT: Leaf category is '{context_disease or 'General Inquiry'}'.\n\n"
+        "INSTRUCTIONS:\n"
+        "1. Give direct, empathetic, and actionable advice for tea plantation workers, smallholders, and estate managers.\n"
+        "2. Prioritize cultural management (shade regulation, drainage, plucking table hygiene) and organic bio-controls (Beauveria bassiana, Trichoderma, neem extracts).\n"
+        "3. For chemical measures: Emphasize that chemical products, dosages, and pre-harvest intervals (PHI) must strictly comply with local estate guidelines and regulatory authorities.\n"
+        "4. Format your answer with clear markdown headings, bullet points, and bold terms.\n"
+        "5. Conclude your response with exactly 3 relevant follow-up questions formatted as:\n"
+        "FOLLOWUP_QUESTIONS:\n"
+        "- <Question 1>\n"
+        "- <Question 2>\n"
+        "- <Question 3>"
+    )
+
+    contents = []
+    if history:
+        for msg in history[-6:]:
+            role = "user" if msg.get("role") == "user" else "model"
+            content = msg.get("content") or msg.get("text", "")
+            if content:
+                contents.append({
+                    "role": role,
+                    "parts": [{"text": content}]
+                })
+
+    contents.append({
+        "role": "user",
+        "parts": [{"text": message}]
+    })
+
+    url = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent"
+        f"?key={settings.GEMINI_API_KEY}"
+    )
+
+    payload = {
+        "system_instruction": {
+            "parts": [{"text": system_instruction}]
+        },
+        "contents": contents,
+        "generationConfig": {
+            "temperature": 0.3,
+            "maxOutputTokens": 1024,
+        }
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.post(url, json=payload)
+            if response.status_code != 200:
+                logger.warning(f"Gemini API returned {response.status_code}: {response.text}")
+                return None
+
+            data = response.json()
+            candidates = data.get("candidates", [])
+            if not candidates:
+                return None
+
+            text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+            if not text:
+                return None
+
+            # Parse followups if present
+            followups: List[str] = []
+            reply_text = text.strip()
+            if "FOLLOWUP_QUESTIONS:" in text:
+                parts = text.split("FOLLOWUP_QUESTIONS:")
+                reply_text = parts[0].strip()
+                raw_followups = parts[1].strip().split("\n")
+                for q in raw_followups:
+                    clean_q = q.strip().lstrip("-*123. ").strip()
+                    if clean_q and len(clean_q) > 5:
+                        followups.append(clean_q)
+
+            if not followups:
+                followups = [
+                    f"What are the organic controls for {context_disease or 'this condition'}?",
+                    f"What weather triggers {context_disease or 'disease outbreaks'}?",
+                    "How does shade regulation improve bush health?",
+                ]
+
+            return AssistantChatResponse(
+                reply=reply_text,
+                suggested_followups=followups[:3],
+                references=REFERENCES,
+                disclaimer=DISCLAIMER,
+                provider=f"Gemini ({settings.GEMINI_MODEL})",
+            )
+    except Exception as exc:
+        logger.warning(f"Failed to query Gemini LLM ({exc}); using fallback rule-based system.", exc_info=True)
+        return None
+
+
+def _rule_based_query(
+    message: str,
+    context_disease: Optional[str] = None,
 ) -> AssistantChatResponse:
-    """Analyze user prompt and generate an authoritative agricultural response."""
+    """Fallback rule-based agronomic response from local TRI knowledge base."""
     msg = message.lower().strip()
 
     # Identify target disease from message or context
@@ -125,18 +247,13 @@ def process_assistant_query(
             ],
             references=REFERENCES,
             disclaimer=DISCLAIMER,
+            provider="rule-based (offline TRI knowledge base)",
         )
 
-    # If asking about organic / natural methods
+    # Intent flags
     is_organic = any(w in msg for w in ["organic", "natural", "biological", "bio", "chemical-free", "home remedy"])
-
-    # If asking about prevention
     is_prevention = any(w in msg for w in ["prevent", "avoid", "protect", "stop", "care", "cultural"])
-
-    # If asking about symptoms / identification
     is_symptoms = any(w in msg for w in ["symptom", "identify", "look like", "diagnose", "tell", "distinguish"])
-
-    # If asking about causes / weather
     is_causes = any(w in msg for w in ["cause", "why", "trigger", "weather", "rain", "sun", "humid", "dry"])
 
     if target_key:
@@ -174,9 +291,10 @@ def process_assistant_query(
             suggested_followups=followups,
             references=REFERENCES,
             disclaimer=DISCLAIMER,
+            provider="rule-based (offline TRI knowledge base)",
         )
 
-    # General tea agronomy query
+    # General query
     reply = (
         "Hello! I am your **TeaVision Agronomist Assistant**.\n\n"
         "I can help you with:\n"
@@ -196,5 +314,20 @@ def process_assistant_query(
         ],
         references=REFERENCES,
         disclaimer=DISCLAIMER,
+        provider="rule-based (offline TRI knowledge base)",
     )
 
+
+async def process_assistant_query(
+    message: str,
+    context_disease: Optional[str] = None,
+    history: Optional[List[dict]] = None,
+) -> AssistantChatResponse:
+    """Analyze user prompt and return agronomic intelligence (Gemini LLM or rule-based fallback)."""
+    # 1. Try Gemini LLM if configured
+    gemini_res = await _call_gemini_llm(message, context_disease, history)
+    if gemini_res is not None:
+        return gemini_res
+
+    # 2. Fall back to curated TRI rule-based system
+    return _rule_based_query(message, context_disease)

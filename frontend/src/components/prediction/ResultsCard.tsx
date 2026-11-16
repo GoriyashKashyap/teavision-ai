@@ -21,6 +21,7 @@ import ProbabilityChart from '../charts/ProbabilityChart';
 import FeedbackWidget from './FeedbackWidget';
 import FieldObservationForm from './FieldObservationForm';
 import AttentionHeatmap from './AttentionHeatmap';
+import DiagnosticAssessmentCard from './DiagnosticAssessmentCard';
 import ImageQualityBadge from './ImageQualityBadge';
 import AIAssistantDrawer from '../assistant/AIAssistantDrawer';
 
@@ -253,6 +254,11 @@ export default function ResultsCard({ result, previewUrl, onReset }: Props) {
         saliencyHeatmap={result.saliency_heatmap}
         explanationNote={result.explanation_note}
       />
+
+      {/* Diagnostic Assessment (Context-Aware Diagnostic Engine) */}
+      {result.diagnosis && (
+        <DiagnosticAssessmentCard assessment={result.diagnosis} />
+      )}
 
       {/* Full 7-Class Distribution Chart */}
       <div className="card p-5">

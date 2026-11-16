@@ -45,6 +45,22 @@ export interface PredictionResult {
   heatmap_overlay?: string;
   saliency_heatmap?: string;
   explanation_note?: string;
+  diagnosis?: DiagnosticAssessment;
+}
+
+export interface ModelOption {
+  id: string;
+  name: string;
+  display_name: string;
+  architecture: string;
+  family: string;
+  parameters: number;
+  format: string;
+  is_default: boolean;
+  badge: string;
+  description: string;
+  available: boolean;
+  is_loaded?: boolean;
 }
 
 export interface ModelInfo {
@@ -121,12 +137,99 @@ export interface AssistantChatResponse {
   suggested_followups: string[];
   references: string[];
   disclaimer: string;
+  provider?: string;
 }
 
 export interface ApiError {
   detail: string;
   status_code?: number;
 }
+
+// ============================================================================
+// Context-Aware Diagnostic Engine Types
+// ============================================================================
+
+export type EvidenceStrength = "insufficient" | "weak" | "moderate" | "strong";
+export type CausalityType = "documented" | "contributing_factor" | "hypothesis" | "unverified";
+
+export interface PossibleCause {
+  agent: string;
+  type: CausalityType;
+  evidence: string[];
+}
+
+export interface ContributingFactor {
+  factor: string;
+  strength: "contributing" | "primary" | "secondary";
+}
+
+export interface ConfidenceEvidence {
+  strength: EvidenceStrength;
+  explanation: string;
+  model_confidence: number;
+  distinct_from_reasoning: string;
+}
+
+export interface Reference {
+  title: string;
+  year: string;
+  url?: string;
+}
+
+export interface DiagnosticRecommendation {
+  cultural: string[];
+  sanitation: string[];
+  drainage_canopy: string[];
+  biological: string[];
+  chemical: string[];
+}
+
+export interface DiagnosticAssessment {
+  detected_category: string;
+  possible_cause: PossibleCause;
+  supporting_evidence: string[];
+  contributing_factors: ContributingFactor[];
+  missing_information: string[];
+  confidence_evidence: ConfidenceEvidence;
+  recommendations: DiagnosticRecommendation;
+  references: Reference[];
+  requires_expert_verification: boolean;
+  last_reviewed_date: string;
+}
+
+export interface DiagnoseRequest {
+  prediction_id: string;
+  lighting_condition?: "direct_sunlight" | "overcast" | "shaded" | "indoor_lab" | "unknown";
+  leaf_age?: "tender_flush" | "maintenance_mature" | "old_coarse" | "unknown";
+  observation_notes?: string;
+}
+
+export interface DiagnoseResponse {
+  diagnosis: DiagnosticAssessment;
+  prediction_snapshot: {
+    prediction_id: string;
+    predicted_class: string;
+    confidence: number;
+    top_predictions: Array<{class_name: string; class_index: number; confidence: number}>;
+    created_at: string;
+  };
+}
+
+// Legacy enum exports for backward compatibility
+export const lighting_condition_enum = {
+  direct_sunlight: "direct_sunlight",
+  overcast: "overcast",
+  shaded: "shaded",
+  indoor_lab: "indoor_lab",
+  unknown: "unknown"
+} as const;
+
+export const leaf_age_enum = {
+  tender_flush: "tender_flush",
+  maintenance_mature: "maintenance_mature",
+  old_coarse: "old_coarse",
+  unknown: "unknown"
+} as const;
 
 export type UploadState =
   | { status: 'idle' }

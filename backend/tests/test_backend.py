@@ -193,6 +193,29 @@ class TestApiRoutes(unittest.TestCase):
         self.assertGreaterEqual(analytics_data["total_predictions"], 1)
         self.assertGreaterEqual(analytics_data["field_observations_count"], 1)
 
+    def test_list_models_and_multi_model_predict(self):
+        # 1. Check list of models
+        resp = self.client.get("/api/v1/models")
+        self.assertEqual(resp.status_code, 200)
+        models = resp.json()
+        self.assertIsInstance(models, list)
+        self.assertGreaterEqual(len(models), 3)
+
+        # Check default model is in the list
+        default_model = next((m for m in models if m["is_default"]), None)
+        self.assertIsNotNone(default_model)
+        self.assertEqual(default_model["id"], "lightteanet-eca-kd")
+
+        # 2. Test prediction with explicit model_id
+        img_bytes = create_dummy_image()
+        files = {"file": ("test_leaf.jpg", img_bytes, "image/jpeg")}
+        data = {"model_id": "lightteanet-se"}
+        pred_resp = self.client.post("/api/v1/predict", files=files, data=data)
+        self.assertEqual(pred_resp.status_code, 200)
+        res_json = pred_resp.json()
+        self.assertEqual(res_json["model_version"], "LightTeaNet-SE")
+        self.assertIn("predicted_class", res_json)
+
 
 if __name__ == "__main__":
     unittest.main()

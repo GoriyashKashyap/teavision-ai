@@ -26,6 +26,10 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+      - key: GEMINI_API_KEY
+        sync: false  # Get free key from https://aistudio.google.com/
+      - key: GEMINI_MODEL
+        value: gemini-3.1-flash-lite
     healthCheckPath: /health
     autoDeploy: true
 

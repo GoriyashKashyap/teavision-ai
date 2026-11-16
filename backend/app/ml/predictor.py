@@ -18,15 +18,15 @@ from app.schemas.prediction import PredictionResponse, QualityAssessment, TopPre
 logger = logging.getLogger("teavision.predictor")
 
 
-def run_prediction(image_bytes: bytes) -> PredictionResponse:
-    """Preprocess image bytes and run a single forward pass.
+def run_prediction(image_bytes: bytes, model_id: Optional[str] = None) -> PredictionResponse:
+    """Preprocess image bytes and run a single forward pass with the selected model.
 
     Returns:
         PredictionResponse with class name, confidence, top-3 predictions,
-        full probability distribution and timing metadata.
+        full probability distribution, explainability heatmaps, and timing metadata.
 
     Raises:
-        RuntimeError: If the model is not loaded.
+        RuntimeError: If the model is not loaded or fails.
         ValueError:   If the image cannot be decoded.
     """
     try:
@@ -35,7 +35,9 @@ def run_prediction(image_bytes: bytes) -> PredictionResponse:
     except ImportError as exc:
         raise RuntimeError("PyTorch not installed.") from exc
 
-    model = model_manager.get_model()
+    model = model_manager.get_model(model_id)
+    meta = model_manager.get_meta(model_id)
+    model_display_name = meta.get("name", "LightTeaNet-ECA")
 
     # Preprocess
     tensor = preprocess_image(image_bytes)  # (1, 3, 224, 224)
@@ -82,7 +84,13 @@ def run_prediction(image_bytes: bytes) -> PredictionResponse:
     saliency_heatmap = None
     explanation_note = None
     try:
-        xai_res = generate_attention_heatmap(image_bytes, best_idx, tensor)
+        xai_res = generate_attention_heatmap(
+            image_bytes,
+            best_idx,
+            tensor,
+            model=model,
+            model_name=model_display_name,
+        )
         heatmap_overlay = xai_res["heatmap_overlay"]
         saliency_heatmap = xai_res["saliency_heatmap"]
         explanation_note = xai_res["explanation_note"]
@@ -97,7 +105,7 @@ def run_prediction(image_bytes: bytes) -> PredictionResponse:
         top_predictions   = top_predictions,
         probabilities     = [round(p, 6) for p in probs_list],
         inference_time_ms = round(inference_ms, 2),
-        model_version     = model_manager.version,
+        model_version     = meta.get("name", model_manager.version),
         created_at        = datetime.now(UTC).isoformat(),
         quality_assessment= quality_data,
         heatmap_overlay   = heatmap_overlay,

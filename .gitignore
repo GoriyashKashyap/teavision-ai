@@ -39,7 +39,7 @@ coverage.xml
 .pytest_cache/
 *.egg-info/
 .pypirc
-
+.env.example
 # --- Node ---------------------------------------------------------
 node_modules/
 npm-debug.log*
@@ -63,7 +63,11 @@ frontend/build/
 # --- Backend secrets ----------------------------------------------
 backend/.env
 backend/models/*.pt
+backend/models/*.pth
+backend/models/*.pkl
 !backend/models/README.md
+!backend/models/lightteanet_eca_mobilevit_xxs_kd_torchscript.pt
+!backend/models/lightteanet_se_torchscript.pt
 backend/data/*.db
 backend/data/
 

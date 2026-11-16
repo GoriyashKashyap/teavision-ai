@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios';
 import type {
   PredictionResult,
   ModelInfo,
+  ModelOption,
   HealthResponse,
   FeedbackPayload,
   FieldObservationPayload,
@@ -10,6 +11,8 @@ import type {
   AnalyticsSummary,
   AssistantChatResponse,
   ApiError,
+  DiagnoseRequest,
+  DiagnoseResponse,
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
@@ -26,10 +29,15 @@ export async function checkHealth(): Promise<HealthResponse> {
   return data;
 }
 
-// ---- Model info ------------------------------------------------------------
+// ---- Model info & catalog --------------------------------------------------
 
 export async function getModelInfo(): Promise<ModelInfo> {
   const { data } = await apiClient.get<ModelInfo>('/api/v1/model/info');
+  return data;
+}
+
+export async function listModels(): Promise<ModelOption[]> {
+  const { data } = await apiClient.get<ModelOption[]>('/api/v1/models');
   return data;
 }
 
@@ -38,9 +46,13 @@ export async function getModelInfo(): Promise<ModelInfo> {
 export async function predict(
   imageFile: File,
   onUploadProgress?: (pct: number) => void,
+  modelId?: string,
 ): Promise<PredictionResult> {
   const form = new FormData();
   form.append('file', imageFile);
+  if (modelId) {
+    form.append('model_id', modelId);
+  }
 
   const { data } = await apiClient.post<PredictionResult>(
     '/api/v1/predict',
@@ -106,6 +118,21 @@ export async function askAssistant(
     message,
     context_disease: contextDisease,
   });
+  return data;
+}
+
+// ---- Diagnostic Engine -----------------------------------------------------------------
+export async function diagnose(
+  payload: DiagnoseRequest,
+): Promise<DiagnoseResponse> {
+  const { data } = await apiClient.post<DiagnoseResponse>('/api/v1/diagnose', payload);
+  return data;
+}
+
+export async function getDiagnosis(
+  prediction_id: string,
+): Promise<DiagnoseResponse> {
+  const { data } = await apiClient.get<DiagnoseResponse>(`/api/v1/diagnose/${prediction_id}`);
   return data;
 }
 

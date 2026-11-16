@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.ml.model import model_manager
-from app.api.routes import health, predict, model_info, feedback, history, observations, analytics, assistant
+from app.api.routes import health, predict, model_info, feedback, history, observations, analytics, assistant, diagnose
 
 
 setup_logging()
@@ -64,6 +64,7 @@ app.include_router(predict.router,      prefix="/api/v1")
 app.include_router(model_info.router,   prefix="/api/v1")
 app.include_router(feedback.router,     prefix="/api/v1")
 app.include_router(history.router,      prefix="/api/v1")
-app.include_router(observations.router, prefix="/api/v1")
-app.include_router(analytics.router,    prefix="/api/v1")
+app.include_router(observations.router,      prefix="/api/v1")
+app.include_router(analytics.router,         prefix="/api/v1")
+app.include_router(diagnose.router,          prefix="/api/v1")
 app.include_router(assistant.router,    prefix="/api/v1")

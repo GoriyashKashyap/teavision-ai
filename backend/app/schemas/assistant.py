@@ -21,4 +21,5 @@ class AssistantChatResponse(BaseModel):
     suggested_followups: List[str]
     references: List[str]
     disclaimer: str
+    provider: Optional[str] = Field(default="rule-based", description="LLM provider or rule-based fallback")
 

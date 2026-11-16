@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional
 import uuid
 
 from app.core.config import settings
+from app.database.supabase_client import supabase_client
 
 logger = logging.getLogger("teavision.database")
 
@@ -124,6 +125,22 @@ class Repository:
                 ),
             )
             conn.commit()
+
+        # If Supabase is configured, replicate record to cloud database
+        if supabase_client.is_configured:
+            supabase_client.insert_prediction({
+                "id": prediction_id,
+                "user_id": user_id,
+                "predicted_class": predicted_class,
+                "class_index": class_index,
+                "confidence": confidence,
+                "probabilities": probabilities,
+                "top_predictions": top_predictions,
+                "image_path": image_path,
+                "inference_time_ms": inference_time_ms,
+                "model_version": model_version,
+                "created_at": created_at,
+            })
 
         return {
             "prediction_id": prediction_id,
@@ -236,6 +253,17 @@ class Repository:
                 (feedback_id, prediction_id, user_id, user_assessment, comments, created_at),
             )
             conn.commit()
+
+        if supabase_client.is_configured:
+            supabase_client.insert_feedback({
+                "id": feedback_id,
+                "prediction_id": prediction_id,
+                "user_id": user_id,
+                "user_assessment": user_assessment,
+                "comments": comments,
+                "created_at": created_at,
+            })
+
         return feedback_id
 
     @staticmethod
@@ -276,6 +304,22 @@ class Repository:
                 ),
             )
             conn.commit()
+
+        if supabase_client.is_configured:
+            supabase_client.insert_observation({
+                "id": obs_id,
+                "prediction_id": prediction_id,
+                "user_id": user_id,
+                "plantation_name": plantation_name,
+                "district": district,
+                "latitude": latitude,
+                "longitude": longitude,
+                "lighting_condition": lighting_condition,
+                "leaf_age": leaf_age,
+                "observation_notes": observation_notes,
+                "created_at": created_at,
+            })
+
         return obs_id
 
     @staticmethod
