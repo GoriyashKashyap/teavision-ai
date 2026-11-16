@@ -18,14 +18,14 @@ class Settings(BaseSettings):
     PORT: int = 8000
 
     # --- CORS — comma-separated string in .env, parsed into list at runtime ---
-    # e.g. ALLOWED_ORIGINS=http://localhost:5173,http://localhost:4173
-    ALLOWED_ORIGINS_STR: str = (
+    # e.g. ALLOWED_ORIGINS=https://teavision-ai.vercel.app,http://localhost:5173
+    ALLOWED_ORIGINS: str = (
         "http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173"
     )
 
     @property
-    def ALLOWED_ORIGINS(self) -> list[str]:
-        return [o.strip() for o in self.ALLOWED_ORIGINS_STR.split(",") if o.strip()]
+    def ALLOWED_ORIGINS_LIST(self) -> list[str]:
+        return [o.strip() for o in self.ALLOWED_ORIGINS.split(",") if o.strip()]
 
     # --- ML Model ---
     MODEL_PATH: Path = Path("models/lightteanet_eca_mobilevit_xxs_kd_torchscript.pt")

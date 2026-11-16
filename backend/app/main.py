@@ -50,13 +50,26 @@ app = FastAPI(
 )
 
 # ---- CORS ----------------------------------------------------------------
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["*"],
-)
+_origins = settings.ALLOWED_ORIGINS_LIST
+_allow_all = "*" in _origins
+
+if _allow_all:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_origins,
+        allow_origin_regex=r"^https://.*\.vercel\.app$",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # ---- Routers -------------------------------------------------------------
 app.include_router(health.router)
