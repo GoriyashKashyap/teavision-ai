@@ -1,64 +1,66 @@
 # 🍃 TeaVision AI
 
-> Intelligence for healthier tea plantations.
+<p align="center">
+  <strong>Intelligent Tea Leaf Disease Diagnostics & Agronomic Decision Support</strong>
+</p>
 
-**TeaVision AI** is an AI-powered tea leaf disease detection platform that identifies diseases and pest-related damage in tea leaves using a custom-trained lightweight deep learning model — **LightTeaNet-ECA**.
+<p align="center">
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 19" />
+  <img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/FastAPI-0.115-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?style=flat-square&logo=pytorch&logoColor=white" alt="PyTorch" />
+  <img src="https://img.shields.io/badge/Google_Gemini-LLM-8E75C2?style=flat-square&logo=google&logoColor=white" alt="Gemini LLM" />
+  <img src="https://img.shields.io/badge/TailwindCSS-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind" />
+  <img src="https://img.shields.io/badge/License-MIT-forest?style=flat-square" alt="License" />
+</p>
 
 ---
 
-## 🚀 Project Status — All 7 Phases Complete
+## 📌 Overview
 
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 1 | Foundation — Project scaffold, design system, routing | ✅ Complete |
-| 2 | Model Integration — LightTeaNet-ECA TorchScript inference | ✅ Complete |
-| 3 | Frontend Experience — Disease library, results card, charts | ✅ Complete |
-| 4 | Database — SQLite (local) / Supabase PostgreSQL (cloud) | ✅ Complete |
-| 5 | Analytics — Dashboard KPIs, charts, prediction history | ✅ Complete |
-| 6 | Advanced AI — Saliency maps, image quality, AI agronomist | ✅ Complete |
-| 7 | Production Deployment — Vercel + Render + Supabase | ✅ Ready |
+**TeaVision AI** is an end-to-end precision agriculture platform designed for tea plantations. It bridges deep learning vision models and generative AI to deliver instantaneous leaf disease identification, explainability heatmaps, clinical risk diagnostics, and actionable agronomic treatment advice.
+
+At its core is **LightTeaNet-ECA**, a custom ultra-lightweight convolutional neural network (101K parameters) trained via knowledge distillation from MobileViT to detect foliar diseases directly in low-connectivity plantation settings.
+
+---
+
+## ✨ Key Features
+
+- **Multi-Model Inference & Selection**: Switch seamlessly between 5 research architectures (Distilled Student CNNs, Vision Transformer Teachers, and Baseline CNNs) directly from the scanning interface.
+- **Explainable AI (XAI)**: Generates input-gradient saliency heatmaps highlighting the exact morphological lesions driving model decisions.
+- **Image Quality Validation**: Automated blur detection (Laplacian variance) and lighting analysis to prevent misclassifications from degraded field captures.
+- **Clinical Diagnostic Engine**: Evaluates infection severity, spread risk, progression timelines, and expert verification thresholds based on top prediction entropy.
+- **AI Agronomist**: Generative advisory powered by Google Gemini (with resilient offline rule-based fallback) delivering structured chemical, organic, and sanitation protocols.
+- **Field Observations & Analytics**: Track disease incidence, geographic hotspots, plantation logs, and feedback across harvest seasons.
+- **Cloud & Offline Sync**: Dual persistence supporting local SQLite out-of-the-box with automatic cloud replication to Supabase PostgreSQL.
+
+---
+
+## 🤖 Supported Models & Architecture
+
+| Model | Architecture | Role | Parameters | Format | Latency (CPU) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **LightTeaNet-ECA** *(Default)* | Depthwise CNN + ECA Attention | Primary Distilled Student | **101,940** | TorchScript (`.pt`) | ~30 ms |
+| **LightTeaNet-SE** | Depthwise CNN + SE Blocks | Lightweight Student | **76,000** | TorchScript (`.pt`) | ~25 ms |
+| **MobileNetV2** | Inverted Residual CNN | Empirical Baseline | **2,232,839** | PyTorch (`.pth`) | ~45 ms |
+| **MobileViT-XXS** | Mobile Separable ViT | Teacher Model | **953,271** | ByobNet (`.pkl`) | ~65 ms |
+| **MobileViT-S** | Mobile Separable ViT | Heavy Teacher | **4,942,119** | ByobNet (`.pkl`) | ~140 ms |
+
+### Target Classes (Fixed Indexing)
+`0: Tea algal leaf spot` · `1: Brown Blight` · `2: Gray Blight` · `3: Helopeltis` · `4: Red spider` · `5: Green mirid bug` · `6: Healthy leaf`
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React 19, TypeScript, Vite |
-| **Styling** | Tailwind CSS, Framer Motion |
-| **UI** | Lucide React, Recharts |
-| **Backend** | FastAPI, Python 3.11+ |
-| **ML** | PyTorch (CPU), TorchScript |
-| **Database** | SQLite (local) / Supabase PostgreSQL (cloud) |
-| **Deployment** | Vercel (frontend), Render (backend) |
-
----
-
-## 🤖 ML Model — LightTeaNet-ECA
-
-| Property | Value |
-|----------|-------|
-| Architecture | Lightweight depthwise-separable CNN + ECA attention |
-| Parameters | 101,940 |
-| Input | (N, 3, 224, 224) RGB |
-| Output | 7-class softmax |
-| Format | TorchScript (.pt) |
-| Test Accuracy | 87.50% (792 samples, lab conditions) |
-| Macro F1 | 86.00% |
-
-### Disease Classes (class index order is fixed)
-
-| Index | Class |
-|-------|-------|
-| 0 | Tea algal leaf spot |
-| 1 | Brown Blight |
-| 2 | Gray Blight |
-| 3 | Helopeltis |
-| 4 | Red spider |
-| 5 | Green mirid bug |
-| 6 | Healthy leaf |
-
-> **Note:** Confidence scores are softmax probabilities from the model — not real-world field accuracy. Always consult a certified plant pathologist before chemical applications.
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS, Lucide Icons, Recharts |
+| **Backend** | FastAPI, Uvicorn, Python 3.11, Pydantic v2 |
+| **Machine Learning** | PyTorch (CPU-optimized), TorchScript, Timm |
+| **Generative AI** | Google Gemini API (`gemini-3.1-flash-lite` / `gemini-1.5-flash`) |
+| **Database** | SQLite (local) + Supabase PostgreSQL (cloud REST sync) |
+| **Deployment** | Vercel (Frontend SPA) + Render (Backend Web Service) + GitHub Actions |
 
 ---
 
@@ -66,148 +68,102 @@
 
 ```
 TeaVision Application/
-├── frontend/                     # React + Vite app
-│   ├── src/
-│   │   ├── pages/               # LandingPage, ScannerPage, DashboardPage, etc.
-│   │   ├── components/          # ResultsCard, AttentionHeatmap, AIAssistantDrawer, ...
-│   │   ├── services/api.ts      # Axios API client
-│   │   ├── data/diseases.ts     # TRI-curated disease knowledge base
-│   │   └── types/index.ts       # TypeScript interfaces
-│   ├── public/manifest.json     # PWA manifest
-│   ├── vercel.json              # Vercel SPA routing + security headers
-│   └── .env.production          # Production API URL
+├── backend/
+│   ├── app/
+│   │   ├── api/routes/          # Prediction, Models, Analytics, Diagnostics, Assistant
+│   │   ├── core/                # Configuration and Pydantic settings
+│   │   ├── database/            # SQLite repository & Supabase REST client
+│   │   ├── ml/                  # Model manager, explainability (XAI), quality analysis
+│   │   ├── schemas/             # Request/response validation models
+│   │   └── services/            # Gemini LLM and agronomic advisor service
+│   ├── models/                  # Research model artifacts (LightTeaNet, MobileViT, etc.)
+│   ├── tests/                   # Automated unit & integration test suite (19 tests)
+│   ├── render.yaml              # Render cloud infrastructure blueprint
+│   └── requirements.txt         # Python dependencies
 │
-└── backend/                     # FastAPI Python app
-    ├── app/
-    │   ├── api/routes/          # predict, history, analytics, assistant, ...
-    │   ├── ml/                  # predictor.py, explainability.py, quality.py
-    │   ├── database/repository.py
-    │   └── schemas/             # Pydantic models
-    ├── models/                  # TorchScript .pt artifact (not in git)
-    ├── tests/                   # test_backend.py (12), test_phase6.py (4)
-    ├── Dockerfile               # Docker deployment
-    ├── render.yaml              # Render.com deployment config
-    ├── supabase_schema.sql      # Supabase PostgreSQL migration
-    └── requirements.txt
+├── frontend/
+│   ├── src/
+│   │   ├── components/          # Diagnostic cards, ModelSelector, Results, XAI viewer
+│   │   ├── pages/               # Scanner, Disease Library, History, Analytics Dashboard
+│   │   └── services/api.ts      # Axios API client
+│   └── vercel.json              # Vercel SPA routing and security headers
+│
+└── .github/workflows/
+    └── keep-alive.yml           # Automated ping workflow to prevent free-tier spin-down
 ```
 
 ---
 
-## ⚡ Quick Start (Local Development)
+## ⚡ Quick Start
 
 ### Prerequisites
-- Python 3.11+
-- Node.js 20+
-- PyTorch (CPU) installed: `pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu`
+- **Node.js** 20+
+- **Python** 3.11
+- **Git**
 
-### Backend
-
-```powershell
-cd backend
-python -m venv venv
-.\venv\Scripts\Activate
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-pip install -r requirements.txt
-# Place lightteanet_eca_mobilevit_xxs_kd_torchscript.pt in backend/models/
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+### 1. Clone & Configure
+```bash
+git clone https://github.com/GoriyashKashyap/teavision-ai.git
+cd teavision-ai
 ```
 
-### Frontend
+### 2. Backend Setup
+```bash
+cd backend
+python -m venv venv
 
-```powershell
-cd frontend
+# Windows:
+.\venv\Scripts\Activate
+# Linux / macOS:
+source venv/bin/activate
+
+# Install CPU PyTorch first, followed by requirements
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+pip install -r requirements.txt
+
+# Create .env from template
+cp .env.example .env
+```
+
+Start backend server:
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+Interactive API documentation will be live at `http://localhost:8000/docs`.
+
+### 3. Frontend Setup
+```bash
+cd ../frontend
 npm install
 npm run dev
 ```
+Client application will open at `http://localhost:5173`.
 
-App available at: http://localhost:5173  
-API docs at: http://localhost:8000/docs
+---
 
-### Tests
+## 🧪 Running Tests
 
-```powershell
+The test suite validates image preprocessing, multi-model loading, diagnostic entropy, and AI integration:
+
+```bash
 cd backend
-.\venv\Scripts\python.exe -m unittest tests/test_backend.py tests/test_phase6.py
-# Expected: Ran 16 tests in ~2s, OK
+.\venv\Scripts\python.exe -m unittest tests/test_backend.py tests/test_phase6.py -v
 ```
+*(All 19 tests must pass)*
 
 ---
 
 ## 🌐 Production Deployment
 
-### Frontend → Vercel
-
-1. Push repo to GitHub
-2. Import project in [vercel.com/new](https://vercel.com/new)
-3. Set **Framework Preset**: Vite
-4. Set **Root Directory**: `frontend`
-5. Add environment variable: `VITE_API_URL=https://teavision-api.onrender.com`
-6. Deploy
-
-### Backend → Render
-
-1. Create **New Web Service** on [render.com](https://render.com)
-2. Connect GitHub repo
-3. Set **Root Directory**: `backend`
-4. **Build Command**:
-   ```
-   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu && pip install -r requirements.txt
-   ```
-5. **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-6. Set environment variables:
-   - `ALLOWED_ORIGINS` → your Vercel URL (e.g. `https://teavision.vercel.app`)
-   - `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-7. Upload the `.pt` model file via Render Shell or persistent storage
-8. Deploy
-
-> ⚠️ The `.pt` model file is excluded from git. See [Model Hosting](#model-hosting) below.
-
-### Model Hosting
-
-The TorchScript artifact (`lightteanet_eca_mobilevit_xxs_kd_torchscript.pt`, ~0.577 MB) is excluded from git due to binary size conventions. Deployment options:
-
-| Option | Method |
-|--------|--------|
-| **Render** | Use Render Shell to upload after first deploy |
-| **Git LFS** | `git lfs track "*.pt"` then commit normally |
-| **Object storage** | Host on Supabase Storage / S3, download at startup |
-
-### Database → Supabase
-
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Run `backend/supabase_schema.sql` in the SQL Editor
-3. Copy credentials to Render environment variables
+- **Frontend (Vercel)**: Connect your repository, set root directory to `frontend`, and configure `VITE_API_URL=https://<your-render-url>.onrender.com`.
+- **Backend (Render)**: Connect repository, set root directory to `backend`, runtime to `Python 3.11.10`, and build command:
+  ```bash
+  pip install --upgrade pip && pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu && pip install -r requirements.txt
+  ```
+- **Keep-Alive**: An automated GitHub Action (`.github/workflows/keep-alive.yml`) runs every 10 minutes to prevent Render free-tier cold starts.
 
 ---
 
-## 🔌 API Reference
+## 📄 Research Disclaimer
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Server health + model status |
-| GET | `/api/v1/model/info` | Model metadata |
-| POST | `/api/v1/predict` | Upload image → disease prediction |
-| GET | `/api/v1/predictions` | List prediction history |
-| GET | `/api/v1/predictions/{id}` | Single prediction detail |
-| POST | `/api/v1/feedback` | Submit prediction feedback |
-| POST | `/api/v1/field-observations` | Log field observation |
-| GET | `/api/v1/analytics/summary` | Analytics aggregates |
-| POST | `/api/v1/assistant/chat` | AI agronomist chat |
-
-Full interactive docs: `http://localhost:8000/docs`
-
----
-
-## 🧠 Phase 6 — Advanced AI Features
-
-- **Image Quality Assessment** — Laplacian variance blur detection + brightness/contrast analysis. Warns users about poor-quality images before accepting predictions.
-- **Gradient Saliency Maps** — Input gradient–based visual explanations showing which image regions most influenced the prediction. (Note: TorchScript does not support `register_forward_hook`; `torch.autograd.grad` is used instead of Grad-CAM.)
-- **AI Agronomist** — KB-driven conversational assistant covering all 7 disease classes with symptom identification, treatment protocols, and organic management options. Backed by TRI-referenced literature.
-
----
-
-## 📄 License & Research Use
-
-This application was developed as part of a final-year research project to evaluate the LightTeaNet-ECA model in real-world field conditions. It is intended for research and educational demonstrations.
-
-Predictions are probabilistic AI outputs and do **not** guarantee agricultural accuracy. Always consult a certified plant pathologist or agricultural extension officer before making treatment decisions.
+TeaVision AI was created as an academic research platform to benchmark lightweight deep learning models and generative agronomic guidance in tea cultivation. Model confidence values represent statistical softmax distributions; critical agricultural decisions and chemical treatments should always be verified with a certified plant pathologist or tea estate advisory extension officer.
